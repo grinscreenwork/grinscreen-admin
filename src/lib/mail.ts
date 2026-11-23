@@ -33,7 +33,7 @@ function transport() {
 export type Mail = { to: string | string[]; subject: string; html: string; text: string; replyTo?: string };
 
 export async function sendMail(mail: Mail): Promise<void> {
-  if (!mailConfigured()) throw new Error("Email isn't configured (GMAIL_USER / GMAIL_APP_PASSWORD).");
+  if (!mailConfigured()) throw new Error("not configured");
   await transport().sendMail({
     from: { name: "GrinScreen", address: process.env.GMAIL_USER! },
     to: mail.to,
@@ -48,8 +48,8 @@ export async function sendMail(mail: Mail): Promise<void> {
 export function friendlyMailError(e: unknown): string {
   const msg = e instanceof Error ? e.message : String(e);
   if (/535|invalid login|username and password not accepted|application-specific password/i.test(msg))
-    return "Gmail rejected the login. Check GMAIL_USER and that GMAIL_APP_PASSWORD is a valid App Password (needs 2-Step Verification on).";
-  if (/ETIMEDOUT|ECONNREFUSED|ENOTFOUND|timeout/i.test(msg)) return "Couldn't reach Gmail. Check the internet connection and try again.";
-  if (/not configured/i.test(msg)) return msg;
-  return "Gmail couldn't send the message. Please try again.";
+    return "The email account couldn't be signed in to, so nothing was sent. Please ask your developer to check the email setup.";
+  if (/ETIMEDOUT|ECONNREFUSED|ENOTFOUND|timeout/i.test(msg)) return "Couldn't reach the email service. Please try again in a moment.";
+  if (/not configured/i.test(msg)) return "Email sending isn't set up yet. Please ask your developer to finish the email setup.";
+  return "The email couldn't be sent. Please try again.";
 }

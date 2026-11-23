@@ -38,7 +38,7 @@ export async function deleteRecipient(id: string): Promise<ActionResult> {
 export async function sendTestEmail(id: string): Promise<ActionResult> {
   await requireAdmin();
   if (!isUuid(id)) return fail("Invalid recipient.");
-  if (!mailConfigured()) return fail("Email isn't configured yet. Add GMAIL_USER and GMAIL_APP_PASSWORD to the admin's .env.");
+  if (!mailConfigured()) return fail("Email sending isn't set up yet. Please ask your developer to finish the email setup.");
   const { data } = await db().from("gs_notification_recipients").select("email").eq("id", id).maybeSingle();
   if (!data) return fail("Recipient not found.");
   try {
@@ -50,6 +50,7 @@ export async function sendTestEmail(id: string): Promise<ActionResult> {
     });
     return { ok: true };
   } catch (e) {
+    console.error("[notify] test email failed:", e instanceof Error ? e.message : e);
     return fail(friendlyMailError(e));
   }
 }

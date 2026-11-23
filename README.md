@@ -7,7 +7,7 @@ Admin panel for the GrinScreen website: reels, posters, case studies, testimonia
 1. `cp .env.example .env` and fill it in (Supabase URL + keys, `SESSION_URL`, a random `SESSION_SECRET`, a shared `REVALIDATE_SECRET`).
 2. `npm install`
 3. `npm run db:migrate` – creates the `gs_*` tables, security policies and storage buckets.
-4. Sign-in uses **Supabase Auth**: create a user (email + password) in Supabase → Authentication → Users, then **turn off public sign-ups** (Authentication → Sign In / Providers → “Allow new users to sign up”). Every user in Supabase Auth can sign in; there is no email list in this app, and login is refused while public sign-ups are on.
+4. Sign-in uses **Supabase Auth**: create a user (email + password) in Supabase → Authentication → Users, every user in Supabase Auth can sign in; there is no email list in this app. **Recommended:** turn off public sign-ups (Authentication → Sign In / Providers → “Allow new users to sign up”) so that only users you create exist.
 5. Optional, one-time: `npm run db:seed` imports the original reels/posters/case studies. It has already been run for the live project, and it expects the client repo checked out next to this one at `../grinscreen-client`.
 6. `npm run dev` → http://localhost:3001
 

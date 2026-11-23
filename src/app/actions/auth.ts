@@ -8,28 +8,8 @@ import { clearFailures, recordFailure, tooManyAttempts } from "@/lib/rate-limit"
 
 export type LoginState = { error?: string };
 
-// Who is an admin? Whoever you've authorized in Supabase Auth (Authentication → Users).
-// There is no email list in this app. The one safeguard: if the project lets the public
-// create their own accounts, "any Supabase user" would mean "anyone on the internet",
-// so sign-in is refused until public sign-ups are switched off in Supabase.
-let signupCache: { at: number; open: boolean | null } | null = null;
-
-async function publicSignupsOpen(): Promise<boolean | null> {
-  if (signupCache && Date.now() - signupCache.at < 60_000) return signupCache.open;
-  let open: boolean | null = null;
-  try {
-    const res = await fetch(`${process.env.SUPABASE_URL}/auth/v1/settings`, {
-      headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY! },
-      cache: "no-store",
-      signal: AbortSignal.timeout(5000),
-    });
-    if (res.ok) open = (await res.json()).disable_signup === false;
-  } catch {
-    open = null; // couldn't tell
-  }
-  signupCache = { at: Date.now(), open };
-  return open;
-}
+// Who is an admin? Anyone you've created in Supabase Auth (Authentication → Users).
+// They sign in with their email and password, no extra setup.
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -39,7 +19,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   const h = await headers();
   const ip = (h.get("x-forwarded-for") ?? "unknown").split(",")[0].trim();
   const key = `${ip}:${email}`;
-  if (tooManyAttempts(key)) return { error: "Too many attempts. Try again in 15 minutes." };
+  if (tooManyAttempts(key)) return { error: "Too many attempts. Please try again in 15 minutes." };
 
   // Credentials are checked by Supabase Auth with a throwaway, stateless client.
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
@@ -49,21 +29,13 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
 
   if (error || !data.user) {
     recordFailure(key);
-    if (error && /not confirmed/i.test(error.message)) return { error: "Confirm your email in Supabase first." };
-    return { error: "Incorrect email or password." };
-  }
-
-  // Valid Supabase user. Only let them in if the public can't just register themselves.
-  if (process.env.ALLOW_OPEN_SIGNUPS !== "true") {
-    const open = await publicSignupsOpen();
-    if (open !== false) {
-      return {
-        error:
-          open === true
-            ? "Your password is correct, but public sign-ups are enabled on your Supabase project, so anyone could register and become an admin. In Supabase go to Authentication → Sign In / Providers and turn off “Allow new users to sign up”, then sign in again."
-            : "Couldn't verify your Supabase sign-up settings. Please try again in a moment.",
-      };
+    if (error && !/invalid login credentials/i.test(error.message)) {
+      console.error("[auth] sign-in failed:", error.message); // detail for the developer's logs only
     }
+    if (error && /not confirmed/i.test(error.message)) {
+      return { error: "This account's email hasn't been confirmed yet. Please check your inbox." };
+    }
+    return { error: "Incorrect email or password." };
   }
 
   clearFailures(key);

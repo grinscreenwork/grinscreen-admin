@@ -36,7 +36,7 @@ Storage buckets (public read): `grinscreen-reels` (videos), `grinscreen-images` 
 
 - Client uses the **publishable key**. RLS lets it `select` published rows and `insert` a booking, nothing else.
 - Admin uses the **secret key on the server only** (`SUPABASE_SECRET_KEY`, never `NEXT_PUBLIC_`). Every route except `/login`
-  is gated by `src/proxy.ts` (signed 24h JWT cookie issued after Supabase Auth email+password login; any user of the Supabase project's Auth can sign in, and login is refused while public sign-ups are enabled, since anyone could then register as admin) and every server action / route handler re-checks the session.
+  is gated by `src/proxy.ts` (signed 24h JWT cookie issued after Supabase Auth email+password login; any user in the Supabase project's Auth can sign in. Recommended hardening: turn off public sign-ups in Supabase so only users you create can exist) and every server action / route handler re-checks the session.
 - Uploads are compressed in the browser first (`src/lib/compress.ts` for images, `src/lib/compress-video.ts` for video, with an ffmpeg.wasm fallback for codecs the browser can't decode; its worker is copied to `public/ffmpeg` on `npm install`): videos -> H.264 MP4, <=720p, no audio, <5 MB; images -> resized WebP. They then go browser -> Supabase Storage via a short-lived signed URL from `/api/upload/sign`. The buckets enforce the same limits (reels 5 MB mp4-only, images 1 MB). Route every upload through `uploadFile()`.
 - Freshness: after each change the admin POSTs `CLIENT_SITE_URL/api/revalidate` with `REVALIDATE_SECRET` (same value in both
   apps). Client pages also self-refresh every 60 s.

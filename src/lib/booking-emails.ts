@@ -79,7 +79,8 @@ export async function notifyBooking(booking: Booking): Promise<NotifyResult> {
   const problems: string[] = [];
 
   if (!mailConfigured()) {
-    const error = "Email isn't configured yet (GMAIL_USER / GMAIL_APP_PASSWORD).";
+    console.error("[notify] email is not configured (GMAIL_USER / GMAIL_APP_PASSWORD missing)");
+    const error = "Email sending isn't set up yet, so no emails were sent.";
     await sb.from("gs_bookings").update({ notify_error: error }).eq("id", booking.id);
     return { ok: false, sent, error };
   }

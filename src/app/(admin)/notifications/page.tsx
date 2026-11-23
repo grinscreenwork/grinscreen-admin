@@ -32,11 +32,8 @@ export default async function NotificationsPage() {
               <>
                 <p className="font-medium text-warn">Email sending isn&apos;t set up yet.</p>
                 <p className="mt-1 text-fg-muted">
-                  Add <code className="rounded bg-bg px-1.5 py-0.5 font-mono text-xs">GMAIL_USER</code> and{" "}
-                  <code className="rounded bg-bg px-1.5 py-0.5 font-mono text-xs">GMAIL_APP_PASSWORD</code> to the admin&apos;s{" "}
-                  <code className="rounded bg-bg px-1.5 py-0.5 font-mono text-xs">.env</code> (and to Vercel), then restart. The
-                  app password comes from your Google account: turn on 2-Step Verification, then{" "}
-                  <span className="text-fg">Google Account → Security → App passwords</span>.
+                  Booking emails can&apos;t be sent until the sender account is connected. Please ask your developer to finish the
+                  email setup.
                 </p>
               </>
             )}
