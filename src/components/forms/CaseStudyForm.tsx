@@ -34,7 +34,6 @@ export function CaseStudyForm({ study: s, library = [] }: { study?: CaseStudy; l
   const [visuals, setVisuals] = useState<Visual[]>(s?.visuals ?? []);
   const [featured, setFeatured] = useState(s?.featured ?? false);
   const [published, setPublished] = useState(s?.published ?? true);
-  const [order, setOrder] = useState(String(s?.sort_order ?? 0));
   const [addingVisual, setAddingVisual] = useState<null | "image" | "reel">(null);
   const [visualError, setVisualError] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -107,7 +106,6 @@ export function CaseStudyForm({ study: s, library = [] }: { study?: CaseStudy; l
         visuals,
         featured,
         published,
-        sort_order: Number(order) || 0,
       });
       if (!res.ok) return setError(res.error);
       router.push("/case-studies");
@@ -246,7 +244,6 @@ export function CaseStudyForm({ study: s, library = [] }: { study?: CaseStudy; l
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {visuals.map((v, i) => (
                   <li key={v.path} className="overflow-hidden rounded-lg border border-border bg-bg">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={v.kind === "reel" ? v.poster_url : v.url} alt="" className="aspect-[4/5] w-full object-cover" />
                     <div className="space-y-1.5 border-t border-border p-2">
                       <div className="flex items-center justify-between">
@@ -269,9 +266,6 @@ export function CaseStudyForm({ study: s, library = [] }: { study?: CaseStudy; l
         <Card className="h-fit space-y-5">
           <Switch label="Published" hint="Visible on the website." checked={published} onChange={setPublished} />
           <Switch label="Featured on portfolio" hint="Shown on the portfolio page (all case studies are on /case-studies)." checked={featured} onChange={setFeatured} />
-          <Field label="Order" hint="Lower numbers appear first.">
-            <Input type="number" value={order} onChange={(e) => setOrder(e.target.value)} />
-          </Field>
         </Card>
       </div>
       <FormFooter saving={saving || !!addingVisual} error={error} cancelHref="/case-studies" saveLabel={s ? "Save changes" : "Add case study"} />

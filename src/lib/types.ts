@@ -97,4 +97,21 @@ export type NotificationRecipient = {
   created_at: string;
 };
 
+export const WORK_MODES = ["onsite", "remote", "hybrid"] as const;
+export type WorkMode = (typeof WORK_MODES)[number];
+export const WORK_MODE_LABELS: Record<WorkMode, string> = { onsite: "On-site", remote: "Remote", hybrid: "Hybrid" };
+export const JOB_TYPES = ["Full-time", "Part-time", "Internship", "Contract"] as const;
+
+export type Job = {
+  id: string;
+  title: string;
+  work_mode: WorkMode;
+  job_type: string | null;
+  location: string | null;
+  apply_url: string;
+  published: boolean;
+  sort_order: number;
+  created_at: string;
+};
+
 export const ASPECT_RATIOS = ["9:16", "4:5", "1:1", "16:9"] as const;

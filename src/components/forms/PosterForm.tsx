@@ -20,7 +20,6 @@ export function PosterForm({ poster }: { poster?: Poster }) {
   const [images, setImages] = useState<StoredImage[]>(poster?.images ?? []);
   const [featured, setFeatured] = useState(poster?.featured ?? false);
   const [published, setPublished] = useState(poster?.published ?? true);
-  const [order, setOrder] = useState(String(poster?.sort_order ?? 0));
 
   async function addFiles(files: FileList | null) {
     if (!files?.length) return;
@@ -51,7 +50,7 @@ export function PosterForm({ poster }: { poster?: Poster }) {
     e.preventDefault();
     setError(null);
     start(async () => {
-      const res = await savePoster({ id: poster?.id, title, description, images, featured, published, sort_order: Number(order) || 0 });
+      const res = await savePoster({ id: poster?.id, title, description, images, featured, published });
       if (!res.ok) return setError(res.error);
       router.push("/posters");
       router.refresh();
@@ -95,7 +94,6 @@ export function PosterForm({ poster }: { poster?: Poster }) {
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {images.map((img, i) => (
                   <li key={img.path} className="overflow-hidden rounded-lg border border-border bg-bg">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={img.url} alt="" className="aspect-[4/5] w-full object-cover" />
                     <div className="flex items-center justify-between gap-1 border-t border-border p-1.5">
                       <span className="pl-1 font-mono text-[10px] text-fg-muted">{i + 1}</span>
@@ -121,9 +119,6 @@ export function PosterForm({ poster }: { poster?: Poster }) {
         <Card className="h-fit space-y-5">
           <Switch label="Published" hint="Visible on the website." checked={published} onChange={setPublished} />
           <Switch label="Featured" hint="Highlighted on the site." checked={featured} onChange={setFeatured} />
-          <Field label="Order" hint="Lower numbers appear first.">
-            <Input type="number" value={order} onChange={(e) => setOrder(e.target.value)} />
-          </Field>
         </Card>
       </div>
       <FormFooter saving={saving || uploading > 0} error={error} cancelHref="/posters" saveLabel={poster ? "Save changes" : "Add poster"} />

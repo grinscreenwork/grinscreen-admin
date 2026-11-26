@@ -5,7 +5,8 @@ import { db } from "@/lib/supabase";
 import { removeFiles } from "@/lib/storage";
 import { revalidateClient } from "@/lib/revalidate";
 import { syncReelInCaseStudies } from "@/lib/reel-links";
-import { bool, dbError, fail, int, isOwnStorageUrl, isUuid, req, str, type ActionResult } from "@/lib/action-utils";
+import { applyOrder, topSortOrder } from "@/lib/reorder";
+import { bool, dbError, fail, isOwnStorageUrl, isUuid, req, str, type ActionResult } from "@/lib/action-utils";
 import { ASPECT_RATIOS } from "@/lib/types";
 
 export type ReelInput = {
@@ -20,7 +21,6 @@ export type ReelInput = {
   poster_url: string;
   featured: boolean;
   published: boolean;
-  sort_order: number;
 };
 
 export async function saveReel(input: ReelInput): Promise<ActionResult> {
@@ -43,7 +43,6 @@ export async function saveReel(input: ReelInput): Promise<ActionResult> {
     poster_url: str(input.poster_url, 1000),
     featured: bool(input.featured),
     published: bool(input.published, true),
-    sort_order: int(input.sort_order),
   };
 
   const sb = db();
@@ -60,7 +59,8 @@ export async function saveReel(input: ReelInput): Promise<ActionResult> {
     if (old?.poster_path && old.poster_path !== row.poster_path) stale.push({ bucket: "images" as const, path: old.poster_path });
     await removeFiles(stale);
   } else {
-    const { error } = await sb.from("gs_reels").insert(row);
+    // New reels start at the top of the list; drag them elsewhere from the Reels page.
+    const { error } = await sb.from("gs_reels").insert({ ...row, sort_order: await topSortOrder("gs_reels") });
     if (error) return fail(dbError(error.message));
   }
   await revalidateClient();
@@ -89,6 +89,15 @@ export async function deleteReel(id: string): Promise<ActionResult> {
     { bucket: "reels", path: old?.video_path },
     { bucket: "images", path: old?.poster_path },
   ]);
+  await revalidateClient();
+  return { ok: true };
+}
+
+/** Drag-and-drop order from the Reels page: first in the list = first on the website. */
+export async function reorderReels(ids: string[]): Promise<ActionResult> {
+  await requireAdmin();
+  const problem = await applyOrder("gs_reels", ids);
+  if (problem) return fail(problem);
   await revalidateClient();
   return { ok: true };
 }

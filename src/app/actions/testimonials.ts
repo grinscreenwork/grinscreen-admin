@@ -4,7 +4,8 @@ import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/supabase";
 import { removeFiles } from "@/lib/storage";
 import { revalidateClient } from "@/lib/revalidate";
-import { bool, dbError, fail, int, isOwnStorageUrl, isUuid, req, str, type ActionResult } from "@/lib/action-utils";
+import { applyOrder, topSortOrder } from "@/lib/reorder";
+import { bool, dbError, fail, isOwnStorageUrl, isUuid, req, str, type ActionResult } from "@/lib/action-utils";
 
 export type TestimonialInput = {
   id?: string;
@@ -16,7 +17,6 @@ export type TestimonialInput = {
   image_url: string;
   featured: boolean;
   published: boolean;
-  sort_order: number;
 };
 
 export async function saveTestimonial(input: TestimonialInput): Promise<ActionResult> {
@@ -39,7 +39,6 @@ export async function saveTestimonial(input: TestimonialInput): Promise<ActionRe
     image_url: str(input.image_url, 1000),
     featured: bool(input.featured),
     published: bool(input.published, true),
-    sort_order: int(input.sort_order),
   };
 
   const sb = db();
@@ -50,7 +49,7 @@ export async function saveTestimonial(input: TestimonialInput): Promise<ActionRe
     if (error) return fail(dbError(error.message));
     if (old?.image_path && old.image_path !== row.image_path) await removeFiles([{ bucket: "images", path: old.image_path }]);
   } else {
-    const { error } = await sb.from("gs_testimonials").insert(row);
+    const { error } = await sb.from("gs_testimonials").insert({ ...row, sort_order: await topSortOrder("gs_testimonials") });
     if (error) return fail(dbError(error.message));
   }
   await revalidateClient();
@@ -74,6 +73,15 @@ export async function deleteTestimonial(id: string): Promise<ActionResult> {
   const { error } = await sb.from("gs_testimonials").delete().eq("id", id);
   if (error) return fail(dbError(error.message));
   await removeFiles([{ bucket: "images", path: old?.image_path }]);
+  await revalidateClient();
+  return { ok: true };
+}
+
+/** Drag-and-drop order from the Testimonials page: first in the list = first on the website. */
+export async function reorderTestimonials(ids: string[]): Promise<ActionResult> {
+  await requireAdmin();
+  const problem = await applyOrder("gs_testimonials", ids);
+  if (problem) return fail(problem);
   await revalidateClient();
   return { ok: true };
 }

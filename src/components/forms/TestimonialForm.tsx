@@ -21,7 +21,6 @@ export function TestimonialForm({ testimonial: t }: { testimonial?: Testimonial 
   const [image, setImage] = useState<Uploaded | null>(t?.image_path && t.image_url ? { path: t.image_path, url: t.image_url } : null);
   const [featured, setFeatured] = useState(t?.featured ?? false);
   const [published, setPublished] = useState(t?.published ?? true);
-  const [order, setOrder] = useState(String(t?.sort_order ?? 0));
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +36,6 @@ export function TestimonialForm({ testimonial: t }: { testimonial?: Testimonial 
         image_url: image?.url ?? "",
         featured,
         published,
-        sort_order: Number(order) || 0,
       });
       if (!res.ok) return setError(res.error);
       router.push("/testimonials");
@@ -72,9 +70,6 @@ export function TestimonialForm({ testimonial: t }: { testimonial?: Testimonial 
         <Card className="h-fit space-y-5">
           <Switch label="Published" hint="Visible on the website." checked={published} onChange={setPublished} />
           <Switch label="Featured" hint="Shown on the home and portfolio pages." checked={featured} onChange={setFeatured} />
-          <Field label="Order" hint="Lower numbers appear first.">
-            <Input type="number" value={order} onChange={(e) => setOrder(e.target.value)} />
-          </Field>
         </Card>
       </div>
       <FormFooter saving={saving} error={error} cancelHref="/testimonials" saveLabel={t ? "Save changes" : "Add testimonial"} />

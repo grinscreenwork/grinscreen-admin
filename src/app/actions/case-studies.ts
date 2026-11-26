@@ -4,7 +4,8 @@ import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/supabase";
 import { removeFiles } from "@/lib/storage";
 import { revalidateClient } from "@/lib/revalidate";
-import { bool, dbError, fail, int, isOwnStorageUrl, isUuid, req, slugify, str, type ActionResult } from "@/lib/action-utils";
+import { applyOrder, topSortOrder } from "@/lib/reorder";
+import { bool, dbError, fail, isOwnStorageUrl, isUuid, req, slugify, str, type ActionResult } from "@/lib/action-utils";
 import type { Stat, Visual } from "@/lib/types";
 
 export type CaseStudyInput = {
@@ -27,7 +28,6 @@ export type CaseStudyInput = {
   visuals: Visual[];
   featured: boolean;
   published: boolean;
-  sort_order: number;
 };
 
 function cleanVisuals(input: unknown): Visual[] {
@@ -114,7 +114,6 @@ export async function saveCaseStudy(input: CaseStudyInput): Promise<ActionResult
     visuals: cleanVisuals(input.visuals),
     featured: bool(input.featured),
     published: bool(input.published, true),
-    sort_order: int(input.sort_order),
   };
 
   const sb = db();
@@ -130,7 +129,7 @@ export async function saveCaseStudy(input: CaseStudyInput): Promise<ActionResult
     ].filter((f) => !keep.has(f.path));
     await removeFiles(stale);
   } else {
-    const { error } = await sb.from("gs_case_studies").insert(row);
+    const { error } = await sb.from("gs_case_studies").insert({ ...row, sort_order: await topSortOrder("gs_case_studies") });
     if (error) return fail(dbError(error.message));
   }
   await revalidateClient();
@@ -157,6 +156,15 @@ export async function deleteCaseStudy(id: string): Promise<ActionResult> {
     ...(old?.logo_path ? [{ bucket: "images" as const, path: old.logo_path }] : []),
     ...visualFiles(old?.visuals as Visual[]),
   ]);
+  await revalidateClient();
+  return { ok: true };
+}
+
+/** Drag-and-drop order from the Case studies page: first in the list = first on the website. */
+export async function reorderCaseStudies(ids: string[]): Promise<ActionResult> {
+  await requireAdmin();
+  const problem = await applyOrder("gs_case_studies", ids);
+  if (problem) return fail(problem);
   await revalidateClient();
   return { ok: true };
 }

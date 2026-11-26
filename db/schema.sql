@@ -181,3 +181,27 @@ create policy gs_bookings_public_insert on gs_bookings
     and char_length(phone) between 5 and 40
     and (notes is null or char_length(notes) <= 2000)
   );
+
+-- ── Careers / job listings ────────────────────────────────────────
+-- Deliberately minimal: a title, a few basics and a link to the application form (e.g. Google Forms).
+create table if not exists gs_jobs (
+  id          uuid primary key default gen_random_uuid(),
+  title       text not null,
+  work_mode   text not null default 'onsite' check (work_mode in ('onsite', 'remote', 'hybrid')),
+  job_type    text,                       -- optional: Full-time, Part-time, Internship, Contract
+  location    text,                       -- optional: e.g. Dhaka
+  apply_url   text not null,              -- where the "Apply" button sends people
+  published   boolean not null default true,
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+drop trigger if exists gs_jobs_updated_at on gs_jobs;
+create trigger gs_jobs_updated_at before update on gs_jobs for each row execute function gs_set_updated_at();
+create index if not exists gs_jobs_order on gs_jobs (sort_order, created_at desc);
+
+alter table gs_jobs enable row level security;
+drop policy if exists gs_jobs_public_read on gs_jobs;
+create policy gs_jobs_public_read on gs_jobs for select to anon, authenticated using (published = true);
+grant select on gs_jobs to anon, authenticated;
+grant all on gs_jobs to service_role;

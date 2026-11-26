@@ -28,6 +28,7 @@ existing `videos` / `images` / `reels` / `kashful` buckets. Schema lives in the 
 | `gs_case_studies` | full write-up, `featured` = portfolio | `/case-studies` (all), portfolio (featured) |
 | `gs_testimonials` | name, org, photo, quote | `/testimonials` (all), home + portfolio (featured) |
 | `gs_bookings` | read, set status, add notes, resend emails | submitted from `/book` |
+| `gs_jobs` | job title, work mode, type, location, apply link | `/careers` (published only) |
 | `gs_notification_recipients` | owners who get booking alerts | n/a |
 
 Storage buckets (public read): `grinscreen-reels` (videos), `grinscreen-images` (covers, posters, logos, photos).
@@ -56,3 +57,11 @@ npm run db:migrate                         # apply db/schema.sql + create bucket
 npm run db:seed                            # one-time legacy import; needs the old client repo checked out at ../grinscreen-client
 npm run dev                                # :3001
 ```
+
+### Images
+
+Do **not** use `next/image` (its optimizer counts against the hosting free tier). Use plain `<img>` with `loading="lazy"`, `decoding="async"` and explicit `width`/`height` or an aspect-ratio box so nothing shifts. Uploaded images are already resized + compressed to WebP in the admin, and the `@next/next/no-img-element` lint rule is switched off on purpose. There is no `images` block in `next.config.ts`.
+
+### Ordering
+
+Reels, posters, case studies, testimonials and careers are ordered by dragging rows on their admin pages (`src/components/SortableList.tsx`, built on dnd-kit: mouse, touch and keyboard). Dropping saves `sort_order = position` for every row via `applyOrder()` in `src/lib/reorder.ts`; the public site sorts by `sort_order` ascending, so first in the admin list = first on the website. New items are created with the lowest `sort_order`, so they start at the top. There is deliberately no manual "Order" number field.

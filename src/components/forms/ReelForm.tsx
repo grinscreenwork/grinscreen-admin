@@ -23,7 +23,6 @@ export function ReelForm({ reel }: { reel?: Reel }) {
   const [cover, setCover] = useState<Uploaded | null>(reel?.poster_path && reel.poster_url ? { path: reel.poster_path, url: reel.poster_url } : null);
   const [featured, setFeatured] = useState(reel?.featured ?? false);
   const [published, setPublished] = useState(reel?.published ?? true);
-  const [order, setOrder] = useState(String(reel?.sort_order ?? 0));
 
   // When a video is picked and there is no cover yet, grab a frame so the
   // reel shows an image instantly and the video isn't downloaded until needed.
@@ -58,7 +57,6 @@ export function ReelForm({ reel }: { reel?: Reel }) {
         poster_url: cover?.url ?? "",
         featured,
         published,
-        sort_order: Number(order) || 0,
       });
       if (!res.ok) return setError(res.error);
       router.push("/reels");
@@ -124,9 +122,6 @@ export function ReelForm({ reel }: { reel?: Reel }) {
         <Card className="h-fit space-y-5">
           <Switch label="Published" hint="Visible on the website." checked={published} onChange={setPublished} />
           <Switch label="Featured on home page" hint="Shown in the home page reel strip." checked={featured} onChange={setFeatured} />
-          <Field label="Order" hint="Lower numbers appear first.">
-            <Input type="number" value={order} onChange={(e) => setOrder(e.target.value)} />
-          </Field>
         </Card>
       </div>
       <FormFooter saving={saving} error={error} cancelHref="/reels" saveLabel={reel ? "Save changes" : "Add reel"} />

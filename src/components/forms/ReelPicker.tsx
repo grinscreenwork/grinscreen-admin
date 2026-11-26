@@ -64,7 +64,6 @@ export function ReelPicker({
                     >
                       <div className="relative aspect-[9/16] bg-bg">
                         {r.poster_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img src={r.poster_url} alt="" loading="lazy" className="h-full w-full object-cover" />
                         ) : (
                           <video src={r.video_url} muted playsInline preload="metadata" className="h-full w-full object-cover" />

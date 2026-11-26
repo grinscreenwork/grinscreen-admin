@@ -68,7 +68,6 @@ export function Uploader({ kind, folder, label, hint, value, onChange, onPick, r
             kind === "reels" ? (
               <video src={value.url} muted playsInline preload="metadata" className="h-full w-full object-cover" />
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={value.url} alt="" className="h-full w-full object-cover" />
             )
           ) : (

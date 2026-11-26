@@ -4,7 +4,8 @@ import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/supabase";
 import { removeFiles } from "@/lib/storage";
 import { revalidateClient } from "@/lib/revalidate";
-import { bool, dbError, fail, int, isOwnStorageUrl, isUuid, req, str, type ActionResult } from "@/lib/action-utils";
+import { applyOrder, topSortOrder } from "@/lib/reorder";
+import { bool, dbError, fail, isOwnStorageUrl, isUuid, req, str, type ActionResult } from "@/lib/action-utils";
 import type { StoredImage } from "@/lib/types";
 
 export type PosterInput = {
@@ -14,7 +15,6 @@ export type PosterInput = {
   images: StoredImage[];
   featured: boolean;
   published: boolean;
-  sort_order: number;
 };
 
 export async function savePoster(input: PosterInput): Promise<ActionResult> {
@@ -34,7 +34,6 @@ export async function savePoster(input: PosterInput): Promise<ActionResult> {
     images,
     featured: bool(input.featured),
     published: bool(input.published, true),
-    sort_order: int(input.sort_order),
   };
 
   const sb = db();
@@ -46,7 +45,7 @@ export async function savePoster(input: PosterInput): Promise<ActionResult> {
     const keep = new Set(images.map((i) => i.path));
     await removeFiles(((old?.images ?? []) as StoredImage[]).filter((i) => !keep.has(i.path)).map((i) => ({ bucket: "images" as const, path: i.path })));
   } else {
-    const { error } = await sb.from("gs_posters").insert(row);
+    const { error } = await sb.from("gs_posters").insert({ ...row, sort_order: await topSortOrder("gs_posters") });
     if (error) return fail(dbError(error.message));
   }
   await revalidateClient();
@@ -70,6 +69,15 @@ export async function deletePoster(id: string): Promise<ActionResult> {
   const { error } = await sb.from("gs_posters").delete().eq("id", id);
   if (error) return fail(dbError(error.message));
   await removeFiles(((old?.images ?? []) as StoredImage[]).map((i) => ({ bucket: "images" as const, path: i.path })));
+  await revalidateClient();
+  return { ok: true };
+}
+
+/** Drag-and-drop order from the Posters page: first in the list = first on the website. */
+export async function reorderPosters(ids: string[]): Promise<ActionResult> {
+  await requireAdmin();
+  const problem = await applyOrder("gs_posters", ids);
+  if (problem) return fail(problem);
   await revalidateClient();
   return { ok: true };
 }

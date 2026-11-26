@@ -2,7 +2,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { db } from "./supabase";
 import { isUuid } from "./action-utils";
-import type { Booking, CaseStudy, NotificationRecipient, Poster, Reel, Testimonial } from "./types";
+import type { Booking, CaseStudy, Job, NotificationRecipient, Poster, Reel, Testimonial } from "./types";
 
 const order = { ascending: true } as const;
 
@@ -32,6 +32,12 @@ export async function listBookings() {
   return data as Booking[];
 }
 
+export async function listJobs() {
+  const { data, error } = await db().from("gs_jobs").select("*").order("sort_order", order).order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data as Job[];
+}
+
 export async function listRecipients() {
   const { data, error } = await db().from("gs_notification_recipients").select("*").order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
@@ -44,6 +50,7 @@ async function one<T>(table: string, id: string): Promise<T> {
   if (!data) notFound();
   return data as T;
 }
+export const getJob = (id: string) => one<Job>("gs_jobs", id);
 export const getReel = (id: string) => one<Reel>("gs_reels", id);
 export const getPoster = (id: string) => one<Poster>("gs_posters", id);
 export const getCaseStudy = (id: string) => one<CaseStudy>("gs_case_studies", id);

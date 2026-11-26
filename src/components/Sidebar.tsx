@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
@@ -13,6 +12,7 @@ const NAV = [
   { href: "/posters", label: "Posters", icon: "M5 4h14v16H5zM5 15l4-4 4 4 3-3 3 3" },
   { href: "/case-studies", label: "Case Studies", icon: "M7 3h10l3 3v15H4V3zM8 11h8M8 15h8" },
   { href: "/testimonials", label: "Testimonials", icon: "M4 5h16v11H9l-5 4zM8 9h8M8 12h5" },
+  { href: "/jobs", label: "Careers", icon: "M3 8h18v12H3zM8 8V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3M3 13h18" },
   { href: "/bookings", label: "Bookings", icon: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" },
   { href: "/notifications", label: "Notifications", icon: "M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6zM10 19a2 2 0 0 0 4 0" },
 ];
@@ -54,7 +54,7 @@ export function Sidebar({ username, newBookings }: { username: string; newBookin
       {/* Mobile top bar */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-bg/90 px-4 py-3 backdrop-blur lg:hidden">
         <div className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="" width={28} height={28} />
+          <img src="/logo.png" alt="" width={28} height={28} loading="lazy" decoding="async" />
           <span className="font-display text-sm font-bold">GrinScreen Admin</span>
         </div>
         <button
@@ -77,7 +77,7 @@ export function Sidebar({ username, newBookings }: { username: string; newBookin
         )}
       >
         <div className="hidden items-center gap-2.5 px-2 lg:flex">
-          <Image src="/logo.png" alt="" width={32} height={32} />
+          <img src="/logo.png" alt="" width={32} height={32} loading="lazy" decoding="async" />
           <div>
             <p className="font-display text-sm font-bold leading-tight">GrinScreen</p>
             <p className="font-mono text-[10px] uppercase tracking-widest text-brand-bright">Admin</p>
