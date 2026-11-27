@@ -27,7 +27,9 @@ existing `videos` / `images` / `reels` / `kashful` buckets. Schema lives in the 
 | `gs_posters` | one or more images each | portfolio carousel |
 | `gs_case_studies` | full write-up, `featured` = portfolio | `/case-studies` (all), portfolio (featured) |
 | `gs_testimonials` | name, org, photo, quote | `/testimonials` (all), home + portfolio (featured) |
-| `gs_bookings` | read, set status, add notes, resend emails | submitted from `/book` |
+| `gs_bookings` | read, set status, add notes, resend emails | submitted from the form on `/contact` (`/book` redirects there) |
+| `gs_clients` | logo + name (drag to order) | home "Trusted by" marquee, portfolio wall, `/clients` |
+| `gs_photos` | photos, optional caption (drag to order) | portfolio Photography section, `/photography` |
 | `gs_jobs` | job title, work mode, type, location, apply link | `/careers` (published only) |
 | `gs_notification_recipients` | owners who get booking alerts | n/a |
 
@@ -44,7 +46,7 @@ Storage buckets (public read): `grinscreen-reels` (videos), `grinscreen-images` 
 
 ### Booking emails
 
-When someone submits `/book`: the client route saves the booking, then (via `after()`) POSTs `ADMIN_URL/api/notify/booking`
+When someone submits the booking form on `/contact`: the client route saves the booking, then (via `after()`) POSTs `ADMIN_URL/api/notify/booking`
 with `x-notify-secret: NOTIFY_SECRET`. The **admin** app (which holds the Gmail credentials and the owner list) sends
 (1) a confirmation to the customer and (2) an alert to every active row in `gs_notification_recipients`, via Gmail SMTP
 (`GMAIL_USER` + `GMAIL_APP_PASSWORD`, an App Password). Outcome is stored on the booking (`notified_at`, `notify_error`);
@@ -64,4 +66,8 @@ Do **not** use `next/image` (its optimizer counts against the hosting free tier)
 
 ### Ordering
 
-Reels, posters, case studies, testimonials and careers are ordered by dragging rows on their admin pages (`src/components/SortableList.tsx`, built on dnd-kit: mouse, touch and keyboard). Dropping saves `sort_order = position` for every row via `applyOrder()` in `src/lib/reorder.ts`; the public site sorts by `sort_order` ascending, so first in the admin list = first on the website. New items are created with the lowest `sort_order`, so they start at the top. There is deliberately no manual "Order" number field.
+Reels, posters, case studies, clients, photography, testimonials and careers are ordered by dragging rows on their admin pages (`src/components/SortableList.tsx`, built on dnd-kit: mouse, touch and keyboard). Dropping saves `sort_order = position` for every row via `applyOrder()` in `src/lib/reorder.ts`; the public site sorts by `sort_order` ascending, so first in the admin list = first on the website. New items are created with the lowest `sort_order`, so they start at the top. There is deliberately no manual "Order" number field.
+
+### Clients & logos
+
+Client logos are uploaded in the admin (Clients) with a name; they appear in the home "Trusted by" marquee, the portfolio wall and `/clients`. Only transparent logos are used (no white/colour swap). Hovering a logo shows its name (`useLogoTip`, fixed-position so the moving marquee never clips it; focus and tap work too). The one-off import of the old static logos is `npm run db:seed-clients` (admin repo).

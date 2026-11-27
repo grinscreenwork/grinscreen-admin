@@ -2,7 +2,7 @@ import "server-only";
 import { db } from "./supabase";
 import { isUuid } from "./action-utils";
 
-type OrderedTable = "gs_reels" | "gs_posters" | "gs_case_studies" | "gs_testimonials" | "gs_jobs";
+type OrderedTable = "gs_reels" | "gs_posters" | "gs_case_studies" | "gs_testimonials" | "gs_jobs" | "gs_clients" | "gs_photos";
 
 /**
  * Save a drag-and-drop order: the first id gets 0, the next 1, and so on. The public site

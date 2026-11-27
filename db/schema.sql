@@ -205,3 +205,44 @@ drop policy if exists gs_jobs_public_read on gs_jobs;
 create policy gs_jobs_public_read on gs_jobs for select to anon, authenticated using (published = true);
 grant select on gs_jobs to anon, authenticated;
 grant all on gs_jobs to service_role;
+
+-- ── Clients (logos shown in "Trusted by", the portfolio and the Our Clients page) ──
+create table if not exists gs_clients (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  logo_path   text not null,
+  logo_url    text not null,
+  published   boolean not null default true,
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+-- ── Photography (portfolio section + Photography page) ────────────
+create table if not exists gs_photos (
+  id          uuid primary key default gen_random_uuid(),
+  title       text,                        -- optional caption
+  image_path  text not null,
+  image_url   text not null,
+  width       integer,                     -- used to reserve space so the grid doesn't jump while loading
+  height      integer,
+  published   boolean not null default true,
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+do $$
+declare t text;
+begin
+  foreach t in array array['gs_clients','gs_photos'] loop
+    execute format('drop trigger if exists %I on %I', t || '_updated_at', t);
+    execute format('create trigger %I before update on %I for each row execute function gs_set_updated_at()', t || '_updated_at', t);
+    execute format('create index if not exists %I on %I (sort_order, created_at desc)', t || '_order', t);
+    execute format('alter table %I enable row level security', t);
+    execute format('drop policy if exists %I on %I', t || '_public_read', t);
+    execute format('create policy %I on %I for select to anon, authenticated using (published = true)', t || '_public_read', t);
+    execute format('grant select on %I to anon, authenticated', t);
+    execute format('grant all on %I to service_role', t);
+  end loop;
+end $$;

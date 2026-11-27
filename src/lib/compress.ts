@@ -27,6 +27,7 @@ const IMAGE_PRESETS: Record<string, ImagePreset> = {
   "case-studies": { maxEdge: 1200, targetBytes: 280 * 1024, startQuality: 0.82 },
   covers: { maxEdge: 720, targetBytes: 90 * 1024, startQuality: 0.8 },
   logos: { maxEdge: 600, targetBytes: 60 * 1024, startQuality: 0.88 },
+  photography: { maxEdge: 1800, targetBytes: 520 * 1024, startQuality: 0.84 },
   testimonials: { maxEdge: 480, targetBytes: 60 * 1024, startQuality: 0.82 },
 };
 const DEFAULT_IMAGE_PRESET: ImagePreset = { maxEdge: 1400, targetBytes: 300 * 1024, startQuality: 0.82 };

@@ -97,6 +97,28 @@ export type NotificationRecipient = {
   created_at: string;
 };
 
+export type Client = {
+  id: string;
+  name: string;
+  logo_path: string;
+  logo_url: string;
+  published: boolean;
+  sort_order: number;
+  created_at: string;
+};
+
+export type Photo = {
+  id: string;
+  title: string | null;
+  image_path: string;
+  image_url: string;
+  width: number | null;
+  height: number | null;
+  published: boolean;
+  sort_order: number;
+  created_at: string;
+};
+
 export const WORK_MODES = ["onsite", "remote", "hybrid"] as const;
 export type WorkMode = (typeof WORK_MODES)[number];
 export const WORK_MODE_LABELS: Record<WorkMode, string> = { onsite: "On-site", remote: "Remote", hybrid: "Hybrid" };

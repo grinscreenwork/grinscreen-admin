@@ -11,6 +11,8 @@ const NAV = [
   { href: "/reels", label: "Reels", icon: "M4 5h16v14H4zM10 9l5 3-5 3z" },
   { href: "/posters", label: "Posters", icon: "M5 4h14v16H5zM5 15l4-4 4 4 3-3 3 3" },
   { href: "/case-studies", label: "Case Studies", icon: "M7 3h10l3 3v15H4V3zM8 11h8M8 15h8" },
+  { href: "/clients", label: "Clients", icon: "M3 21V8l9-5 9 5v13M9 21v-6h6v6M3 21h18" },
+  { href: "/photography", label: "Photography", icon: "M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" },
   { href: "/testimonials", label: "Testimonials", icon: "M4 5h16v11H9l-5 4zM8 9h8M8 12h5" },
   { href: "/jobs", label: "Careers", icon: "M3 8h18v12H3zM8 8V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3M3 13h18" },
   { href: "/bookings", label: "Bookings", icon: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" },
